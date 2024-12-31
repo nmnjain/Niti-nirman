@@ -8,8 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seed": "ts-node --esm src/lib/seed-questions.ts",
-    "backend": "python  -m dotenv \"C:\\Users\\jainn\\Downloads\\ey hackathon\\pythonML Model\\scheme.py\"",
+    "backend": "node runBackend.js",
     "start": "concurrently \"npm run dev\" \"npm run backend\""
   },
   "dependencies": {
@@ -35,6 +34,8 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
-    "vite": "^5.4.2"
+    "vite": "^5.4.2",
+    "concurrently": "^7.0.0"
   }
 }
+

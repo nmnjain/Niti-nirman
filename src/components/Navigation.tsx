@@ -1,11 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../context/LanguageContext';
 import { Menu, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import serviceImage from '../assests/images/logo.png'
+import { translate } from '../utils/translate';
 
 export function Navigation() {
   const { user, logout } = useAuth();
+  const { language, setLanguage } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -16,6 +19,10 @@ export function Navigation() {
     } catch (error) {
       console.error('Logout failed:', error);
     }
+  };
+
+  const handleLanguageChange = (lang: string) => {
+    setLanguage(lang);
   };
 
   return (
@@ -40,13 +47,13 @@ export function Navigation() {
                 to="/Login"
                 className="text-blue-700 hover:bg-blue-50 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
               >
-                Sign In
+                {translate('login', language)}
               </Link>
               <Link
                 to="/SignUp"
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center mr-4"
               >
-                Sign Up
+                {translate('signup', language)}
               </Link>
             </div>
           ) : (
@@ -55,14 +62,14 @@ export function Navigation() {
                 to="/profile"
                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
               >
-                Profile
+                {translate('profile', language)}
               </Link>
               <button
                 onClick={handleLogout}
                 className="text-gray-700 hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2 text-center inline-flex items-center"
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                Logout
+                {translate('logout', language)}
               </button>
             </div>
           )}
@@ -70,13 +77,31 @@ export function Navigation() {
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             type="button"
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 ml-2"
+            className="inline-flex items-center p-5 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 "
             aria-controls="navbar-cta"
             aria-expanded="false"
           >
             <span className="sr-only">Open main menu</span>
             <Menu className="w-5 h-5" />
           </button>
+
+          <select
+            value={language}
+            onChange={(e) => handleLanguageChange(e.target.value)}
+            className="text-white bg-blue-400 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 w-15 ml-4 "
+          >
+            <option value="en">English</option>
+            <option value="hi">हिंदी</option>
+            <option value="ta">தமிழ்</option>
+            <option value="te">తెలుగు</option>
+            <option value="ml">മലയാളം</option>
+            <option value="bn">বাংলা</option>
+            <option value="gu">ગુજરાતી</option>
+            <option value="kn">ಕನ್ನಡ</option>
+            <option value="pa">ਪੰਜਾਬੀ</option>
+            <option value="or">ଓଡ଼ିଆ</option>
+            <option value="ur">اردو</option>
+          </select>
         </div>
 
         <div className={`items-center justify-between ${isMenuOpen ? 'block' : 'hidden'} w-full md:flex md:w-auto md:order-1`} id="navbar-cta">

@@ -206,8 +206,8 @@ CORS(app)  # Enable CORS for all routes
 load_dotenv()
 
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_URL = os.getenv("VITE_SUPABASE_URL")
+SUPABASE_KEY = os.getenv("VITE_SUPABASE_ANON_KEY")
 
 
 recommender = SchemeRecommender(SUPABASE_URL, SUPABASE_KEY)

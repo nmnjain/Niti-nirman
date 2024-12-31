@@ -1,0 +1,116 @@
+# Project Overview
+
+Project Overview:
+Create a modern, user-friendly frontend for a government scheme recommender system. The frontend will interact with a backend Python script and Supabase database to authenticate users, collect user details, run eligibility checks, and display recommendations.
+
+Key Pages and Features:
+
+Landing Page
+
+A visually appealing introduction to the platform.
+Buttons for "Sign Up" and "Login."
+Space for a brief description of the platform's purpose.
+Sign-Up Page
+
+Input fields for user details:
+Full Name
+Gender (dropdown)
+Age
+Location (dropdown or text)
+Caste (dropdown)
+Disability (Yes/No toggle)
+Minority Status (Yes/No toggle)
+Student Status (Yes/No toggle)
+Below Poverty Line (Yes/No toggle)
+Income
+Email and password input fields.
+Phone number input field (optional).
+Email or phone number verification using Supabase Auth.
+Login Page
+
+Email and password fields for authentication.
+Forgot password option using Supabase.
+Dashboard Page (Post-Login)
+
+A button: "Find Schemes for Me".
+Backend integration to run the Python script with user data fetched from Supabase.
+Display eligible schemes with:
+Scheme Name
+Description
+Benefits
+A button: "Check Additional Eligibility" (currently inactive).
+Scheme Details Page
+
+Detailed view of the selected scheme.
+Includes benefits, criteria, and contact information (if available).
+Backend Integration:
+
+Fetch user details from Supabase database and pass them to the Python backend for eligibility checks.
+Display results dynamically after Python script execution.
+Authentication:
+
+Use Supabase Auth for email and password-based authentication.
+Email verification flow upon sign-up.
+Frontend Features:
+
+Responsive design (desktop and mobile).
+Use modern UI components for dropdowns, toggles, and buttons.
+Simple and intuitive navigation.
+
+## Project Name: Niti-Nirman
+
+### Completed Parts
+- 1. Landing page Complete
+2. login and signup page Complete
+3.backend integration Complete
+4. dashboard completed but will change the frontend to make it more pleasant and simialar to website
+5. 
+
+### Parts Left to Complete
+1. translate button : need to include a translate button where there will be support for major india's language default when website someone open will be english
+
+
+2. chatbot
+
+## Database Design
+
+### Tables
+1. schemes: 
+create table
+  public.schemes (
+    id uuid not null default extensions.uuid_generate_v4 (),
+    scheme_name character varying not null,
+    details text null,
+    benefits text null,
+    gender public.gender_type null default 'Anyone'::gender_type,
+    location public.location_type null default 'Anyone'::location_type,
+    eligible_castes character varying[] null default array['Anyone'::text],
+    disability public.yes_no_anyone null default 'Anyone'::yes_no_anyone,
+    minority public.yes_no_anyone null default 'Anyone'::yes_no_anyone,
+    student public.yes_no_anyone null default 'Anyone'::yes_no_anyone,
+    bpl public.yes_no_anyone null default 'Anyone'::yes_no_anyone,
+    age_range character varying not null,
+    income_range character varying not null,
+    constraint schemes_pkey primary key (id)
+  ) tablespace pg_default;
+
+
+2. create table
+  public.user_profiles (
+    id uuid not null default extensions.uuid_generate_v4 (),
+    email character varying not null,
+    gender public.gender_type not null,
+    age integer not null,
+    location public.location_type not null,
+    caste character varying not null,
+    disability public.yes_no_anyone not null,
+    minority public.yes_no_anyone not null,
+    student public.yes_no_anyone not null,
+    bpl public.yes_no_anyone not null,
+    income numeric not null,
+    created_at timestamp with time zone null default timezone ('utc'::text, now()),
+    updated_at timestamp with time zone null default timezone ('utc'::text, now()),
+    constraint user_profiles_pkey primary key (id),
+    constraint user_profiles_email_key unique (email)
+  ) tablespace pg_default;
+
