@@ -2,9 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import serviceImage from '../assests/images/image1.jpg'
 import faqImage from '../assests/images/faq.png'
+import { useLanguage } from '../context/LanguageContext';
 import logoImage from '../assests/images/logo.png'
+import { translate } from '../utils/translate';
 
 export function Landing() {
+  const { language, setLanguage } = useLanguage();
   return (
     <div className="w-full bg-gradient-to-b bg-transparent">
       
@@ -22,16 +25,16 @@ export function Landing() {
             </svg>
           </a>
               <h1 className="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl">
-                Unlock Your Government Benefits with Niti-Nirman
+                {translate('Unlock', language)}
               </h1>
               <p className="mb-8 text-lg font-normal text-gray-600 lg:text-xl">
-                Simplifying access to government schemes with personalized recommendations and secure document verification
+              {translate('subheading', language)}
               </p>
               <Link
                 to="/signup"
                 className="inline-flex items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300"
               >
-                Create Your Profile Now!
+                {translate('create', language)}
                 <svg className="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
                 </svg>
@@ -56,15 +59,15 @@ export function Landing() {
           <div className="md:w-1/2">
             <span className="text-gray-700 font-medium mb-4 block"></span>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Unlock Your Eligibility for Government Schemes
+            {translate('unlockeligibilty', language)}
             </h1>
           </div>
 
           {/* Right Column */}
           <div className="md:w-1/2">
             <p className="text-lg text-gray-600 leading-relaxed">
-              Creating a profile on Niti-Nirman is your first step toward accessing tailored government schemes. Our user-friendly platform simplifies the process, allowing you to quickly input your details and discover the benefits available to you. With just a few clicks, you can stay informed and empowered.
-            </p>
+            {translate('para', language)}
+              </p>
           </div>
         </div>
       </section>

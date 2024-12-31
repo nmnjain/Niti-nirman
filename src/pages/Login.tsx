@@ -45,9 +45,7 @@ export function Login() {
           <h2 className="text-2xl font-semibold text-gray-900">
             Sign in with email
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Make a new doc to bring your words, data, and teams together. For free
-          </p>
+          
         </div>
 
         <div className="mt-8">
@@ -90,7 +88,7 @@ export function Login() {
               disabled={loading}
               className="w-full py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
-              {loading ? 'Signing in...' : 'Get Started'}
+              {loading ? 'Signing in...' : 'Login'}
             </button>
           </form>
 
