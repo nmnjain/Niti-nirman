@@ -139,6 +139,21 @@ export function Navigation() {
                 Contact
               </Link>
             </li>
+            <div>
+
+            {user?(
+              <li>
+              <Link
+                to="/dashboard"
+                className="block py-2 px-3 md:p-0 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700"
+              >
+                My Schemes
+              </Link>
+            </li>
+            ):(
+              <div></div>
+            )}
+            </div>
           </ul>
         </div>
       </div>
