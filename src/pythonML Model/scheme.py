@@ -194,7 +194,7 @@ class SchemeRecommender:
         eligible_scheme_ids = []
         for scheme in schemes:
             if self._check_eligibility(scheme, user):
-                eligible_scheme_ids.append(scheme["id"])  # Append only the ID
+                eligible_scheme_ids.append(scheme["id"])  
         
         return eligible_scheme_ids
 
@@ -202,7 +202,7 @@ class SchemeRecommender:
 
 app = Flask(__name__)
 
-CORS(app)  # Enable CORS for all routes
+CORS(app) 
 load_dotenv()
 
 

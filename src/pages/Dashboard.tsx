@@ -4,6 +4,7 @@ import { Search, RefreshCw } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { useLanguage } from '../context/LanguageContext';
 import type { Scheme, UserProfile } from '../types';
+import ChatbotInterface from '../components/ChatbotInterface';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -223,6 +224,7 @@ export function Dashboard() {
           ))}
         </div>
       )}
+      <ChatbotInterface />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import faqImage from '../assests/images/faq.png'
 import { useLanguage } from '../context/LanguageContext';
 import logoImage from '../assests/images/logo.png'
 import { translate } from '../utils/translate';
+import ChatbotInterface from '../components/ChatbotInterface';
 
 export function Landing() {
   const { language, setLanguage } = useLanguage();
@@ -285,6 +286,8 @@ export function Landing() {
       </div>
     </div>
 </footer>
+
+<ChatbotInterface />
 
 
     </div>
