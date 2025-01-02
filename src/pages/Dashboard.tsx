@@ -1,15 +1,111 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, RefreshCw } from 'lucide-react';
+import { Search, RefreshCw, X } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { useLanguage } from '../context/LanguageContext';
-import type { Scheme, UserProfile } from '../types';
 import ChatbotInterface from '../components/ChatbotInterface';
 
+// Types
+interface Scheme {
+  id: string;
+  scheme_name: string;
+  details: string | null;
+  benefits: string | null;
+  documents_required: string | null;
+}
+
+interface UserProfile {
+  email: string;
+  gender: string;
+  age: number;
+  location: string;
+  caste: string;
+  disability: string;
+  minority: string;
+  student: string;
+  bpl: string;
+  income: number;
+}
+
+// Supabase client setup
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// SchemeDocumentsModal Component
+const SchemeDocumentsModal = ({ 
+  isOpen, 
+  onClose, 
+  documents, 
+  schemeName 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  documents: string | null; 
+  schemeName: string; 
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        onClick={onClose}
+      />
+      
+      <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+          <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+            <div className="flex items-start justify-between">
+              <h3 className="text-lg font-semibold leading-6 text-gray-900">
+                Documents Required - {schemeName}
+              </h3>
+              <button
+                onClick={onClose}
+                className="rounded-md text-gray-400 hover:text-gray-500"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="mt-4">
+              {documents ? (
+                <div className="prose prose-sm">
+                  {documents.split('\n').map((doc, index) => (
+                    <div key={index} className="flex items-start py-1">
+                      {doc.startsWith('-') ? (
+                        <>
+                          <span className="text-blue-600 mr-2">•</span>
+                          <span>{doc.slice(1).trim()}</span>
+                        </>
+                      ) : (
+                        <span>{doc}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">No documents information available.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main Dashboard Component
 export function Dashboard() {
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -18,6 +114,8 @@ export function Dashboard() {
   const [schemes, setSchemes] = useState<Scheme[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [hasExistingSchemes, setHasExistingSchemes] = useState(false);
+  const [selectedScheme, setSelectedScheme] = useState<Scheme | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -39,7 +137,6 @@ export function Dashboard() {
         if (profileError) throw profileError;
         setUserProfile(profile);
 
-        // Check if user has existing schemes
         const { data: existingSchemes, error: schemesError } = await supabase
           .from('user_eligible_schemes')
           .select('scheme_id')
@@ -49,7 +146,6 @@ export function Dashboard() {
         
         if (existingSchemes && existingSchemes.length > 0) {
           setHasExistingSchemes(true);
-          // Fetch and display existing schemes
           await fetchExistingSchemes(user.email);
         }
       } catch (err) {
@@ -64,7 +160,6 @@ export function Dashboard() {
   const fetchExistingSchemes = async (userEmail: string) => {
     try {
       setLoading(true);
-      // Join user_eligible_schemes with schemes table to get full scheme details
       const { data: schemeDetails, error: schemeError } = await supabase
         .from('user_eligible_schemes')
         .select(`
@@ -97,7 +192,6 @@ export function Dashboard() {
     setError(null);
 
     try {
-      // Get recommendations from Python backend
       const recommendationsResponse = await fetch('http://127.0.0.1:5000/get_recommendations', {
         method: 'POST',
         headers: {
@@ -116,13 +210,11 @@ export function Dashboard() {
         throw new Error('Invalid response format from recommendations server');
       }
 
-      // Clear existing schemes for this user
       await supabase
         .from('user_eligible_schemes')
         .delete()
         .eq('user_email', userProfile.email);
 
-      // Insert new eligible schemes
       for (const schemeId of recommendationsData.eligible_scheme_ids) {
         await supabase
           .from('user_eligible_schemes')
@@ -132,7 +224,6 @@ export function Dashboard() {
           });
       }
 
-      // Fetch and display the new schemes
       await fetchExistingSchemes(userProfile.email);
       setHasExistingSchemes(true);
     } catch (err) {
@@ -214,16 +305,30 @@ export function Dashboard() {
               </div>
               <div className="px-4 py-4 border-t">
                 <button
-                  onClick={() => navigate(`/schemes/${scheme.id}`)}
+                  onClick={() => {
+                    setSelectedScheme(scheme);
+                    setIsModalOpen(true);
+                  }}
                   className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  Check Your Eligibility
+                  Documents Required
                 </button>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      <SchemeDocumentsModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedScheme(null);
+        }}
+        documents={selectedScheme?.documents_required || ''}
+        schemeName={selectedScheme?.scheme_name || ''}
+      />
+
       <ChatbotInterface />
     </div>
   );
