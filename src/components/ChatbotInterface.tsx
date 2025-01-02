@@ -22,11 +22,13 @@ const ChatbotInterface = () => {
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
-    setMessages(prev => [...prev, { role: 'user', content: inputMessage }]);
+    const userMessage = inputMessage.trim();
+    setInputMessage(''); // Clear input immediately
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
     try {
-      const response = await sendMessage(inputMessage);
+      const response = await sendMessage(userMessage);
       setMessages(prev => [...prev, { role: 'bot', content: response }]);
     } catch (error) {
       console.error('Error sending message:', error);
@@ -34,7 +36,6 @@ const ChatbotInterface = () => {
     }
 
     setIsLoading(false);
-    setInputMessage('');
   };
 
   const toggleSize = () => {
@@ -46,7 +47,7 @@ const ChatbotInterface = () => {
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all duration-200"
+          className="bg-amber-600 hover:bg-amber-700 text-white rounded-full p-4 shadow-lg transition-all duration-200"
         >
           <MessageSquare className="h-6 w-6" />
         </button>
@@ -59,25 +60,25 @@ const ChatbotInterface = () => {
           `}
         >
           {/* Chat Header */}
-          <div className="flex items-center justify-between p-4 border-b bg-blue-600 text-white rounded-t-lg">
+          <div className="flex items-center justify-between p-4 border-b bg-amber-600 text-white rounded-t-lg">
             <h3 className="font-semibold">Niti-Mitra</h3>
             <div className="flex gap-2">
               <button 
                 onClick={toggleSize}
-                className="hover:bg-blue-700 rounded p-1"
+                className="hover:bg-amber-700 rounded p-1"
                 title={isEnlarged ? "Restore size" : "Maximize"}
               >
                 <Monitor className="h-4 w-4" />
               </button>
               <button 
                 onClick={() => setIsMinimized(!isMinimized)}
-                className="hover:bg-blue-700 rounded p-1"
+                className="hover:bg-amber-700 rounded p-1"
               >
                 {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
               </button>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="hover:bg-blue-700 rounded p-1"
+                className="hover:bg-amber-700 rounded p-1"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -96,8 +97,8 @@ const ChatbotInterface = () => {
                     <div
                       className={`max-w-[80%] rounded-lg px-4 py-2 ${
                         message.role === 'user'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-amber-600 text-white'
+                          : 'bg-amber-50 text-slate-800'
                       }`}
                     >
                       {message.content}
@@ -106,11 +107,11 @@ const ChatbotInterface = () => {
                 ))}
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-gray-100 rounded-lg px-4 py-2">
+                    <div className="bg-amber-50 rounded-lg px-4 py-2">
                       <div className="flex gap-2">
-                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
-                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '400ms' }}></div>
+                        <div className="w-2 h-2 bg-amber-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 bg-amber-600 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
+                        <div className="w-2 h-2 bg-amber-600 rounded-full animate-bounce" style={{ animationDelay: '400ms' }}></div>
                       </div>
                     </div>
                   </div>
@@ -127,14 +128,14 @@ const ChatbotInterface = () => {
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     placeholder="Type your message..."
-                    className={`flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                       isEnlarged ? 'text-base' : 'text-sm'
                     }`}
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={isLoading}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 disabled:opacity-50"
+                    className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg px-4 py-2 disabled:opacity-50"
                   >
                     <Send className="h-5 w-5" />
                   </button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, RefreshCw, X } from 'lucide-react';
+import { Search, RefreshCw, X, ArrowRight, FileText, Shield, Gift } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { useLanguage } from '../context/LanguageContext';
 import ChatbotInterface from '../components/ChatbotInterface';
@@ -32,7 +32,47 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// SchemeDocumentsModal Component
+const SchemeCard = ({ 
+  scheme, 
+  onViewDocuments 
+}: { 
+  scheme: Scheme; 
+  onViewDocuments: () => void;
+}) => (
+  <div className="bg-white rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-lg border border-slate-100 flex flex-col h-full">
+    <div className="p-6 flex-1">
+      <h3 className="text-xl font-serif font-semibold text-slate-900 mb-3">
+        {scheme.scheme_name}
+      </h3>
+      {scheme.details && (
+        <p className="text-slate-600 mb-4 leading-relaxed">
+          {scheme.details}
+        </p>
+      )}
+      {scheme.benefits && (
+        <div className="space-y-3">
+          <div className="flex items-center text-amber-600">
+            <Gift className="h-5 w-5 mr-2" />
+            <h4 className="font-medium">Benefits</h4>
+          </div>
+          <p className="text-slate-600 pl-7">
+            {scheme.benefits}
+          </p>
+        </div>
+      )}
+    </div>
+    <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 mt-auto">
+      <button
+        onClick={onViewDocuments}
+        className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-medium rounded-xl text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all duration-200"
+      >
+        <FileText className="w-4 h-4 mr-2" />
+        View Required Documents
+      </button>
+    </div>
+  </div>
+);
+
 const SchemeDocumentsModal = ({ 
   isOpen, 
   onClose, 
@@ -49,52 +89,56 @@ const SchemeDocumentsModal = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
       
       <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-          <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-            <div className="flex items-start justify-between">
-              <h3 className="text-lg font-semibold leading-6 text-gray-900">
-                Documents Required - {schemeName}
-              </h3>
+        <div className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+          <div className="bg-white px-6 py-6">
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-center">
+                <Shield className="h-6 w-6 text-amber-600 mr-3" />
+                <h3 className="text-xl font-serif font-semibold text-slate-900">
+                  Required Documents
+                </h3>
+              </div>
               <button
                 onClick={onClose}
-                className="rounded-md text-gray-400 hover:text-gray-500"
+                className="rounded-lg p-1 text-slate-400 hover:text-slate-500 hover:bg-slate-100 transition-all duration-200"
               >
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5" />
               </button>
             </div>
             
             <div className="mt-4">
+              <h4 className="text-lg font-medium text-slate-900 mb-4">{schemeName}</h4>
               {documents ? (
-                <div className="prose prose-sm">
+                <div className="space-y-3">
                   {documents.split('\n').map((doc, index) => (
-                    <div key={index} className="flex items-start py-1">
+                    <div key={index} className="flex items-start">
                       {doc.startsWith('-') ? (
                         <>
-                          <span className="text-blue-600 mr-2">•</span>
-                          <span>{doc.slice(1).trim()}</span>
+                          <div className="h-2 w-2 rounded-full bg-amber-600 mt-2 mr-3" />
+                          <span className="text-slate-600">{doc.slice(1).trim()}</span>
                         </>
                       ) : (
-                        <span>{doc}</span>
+                        <span className="text-slate-600">{doc}</span>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500">No documents information available.</p>
+                <p className="text-slate-500">No documents information available.</p>
               )}
             </div>
           </div>
 
-          <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+          <div className="bg-slate-50 px-6 py-4 flex justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all duration-200"
             >
               Close
             </button>
@@ -236,98 +280,94 @@ export function Dashboard() {
 
   if (!userProfile) {
     return (
-      <div className="text-center py-12">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/4 mx-auto"></div>
+      <div className="min-h-screen bg-[#FFFAF5] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-32 bg-amber-100 rounded-full mx-auto" />
+            <div className="h-4 w-48 bg-amber-50 rounded-full mx-auto" />
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome Back!</h1>
-        <p className="mt-4 text-lg text-gray-500">
-          Find government schemes that match your profile
-        </p>
-      </div>
-
-      {error && (
-        <div className="mt-8 p-4 text-sm text-red-700 bg-red-100 rounded-lg">
-          {error}
+    <div className="min-h-screen bg-[#FFFAF5]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h1 className="text-4xl font-serif font-bold text-slate-900 mb-4">
+            Welcome Back!
+          </h1>
+          <p className="text-lg text-slate-600 mb-8">
+            Discover government schemes tailored to your profile
+          </p>
+          <button
+            onClick={findNewSchemes}
+            disabled={loading}
+            className="inline-flex items-center px-6 py-3 text-base font-medium rounded-full text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {hasExistingSchemes ? (
+              <>
+                <RefreshCw className={`mr-2 h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+                {loading ? 'Refreshing...' : 'Refresh Schemes'}
+              </>
+            ) : (
+              <>
+                <Search className="mr-2 h-5 w-5" />
+                {loading ? 'Searching...' : 'Find Schemes for Me'}
+              </>
+            )}
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </button>
         </div>
-      )}
 
-      <div className="mt-8 flex justify-center">
-        <button
-          onClick={findNewSchemes}
-          disabled={loading}
-          className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-        >
-          {hasExistingSchemes ? (
-            <>
-              <RefreshCw className="mr-2 h-5 w-5" />
-              {loading ? 'Refreshing...' : 'Refresh Schemes'}
-            </>
-          ) : (
-            <>
-              <Search className="mr-2 h-5 w-5" />
-              {loading ? 'Searching...' : 'Find Schemes for Me'}
-            </>
-          )}
-        </button>
-      </div>
-
-      {schemes.length > 0 && (
-        <div className="mt-12 grid gap-6 lg:grid-cols-2">
-          {schemes.map((scheme) => (
-            <div
-              key={scheme.id}
-              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-200"
-            >
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg font-medium text-gray-900">
-                  {scheme.scheme_name}
-                </h3>
-                {scheme.details && (
-                  <p className="mt-2 text-sm text-gray-500">
-                    {scheme.details}
-                  </p>
-                )}
-                {scheme.benefits && (
-                  <div className="mt-4">
-                    <h4 className="text-sm font-medium text-gray-900">Benefits:</h4>
-                    <p className="mt-1 text-sm text-gray-500">{scheme.benefits}</p>
-                  </div>
-                )}
-              </div>
-              <div className="px-4 py-4 border-t">
-                <button
-                  onClick={() => {
-                    setSelectedScheme(scheme);
-                    setIsModalOpen(true);
-                  }}
-                  className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  Documents Required
-                </button>
-              </div>
+        {error && (
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="p-4 rounded-lg bg-red-50 border border-red-100">
+              <p className="text-sm text-red-700">{error}</p>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        )}
 
-      <SchemeDocumentsModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedScheme(null);
-        }}
-        documents={selectedScheme?.documents_required || ''}
-        schemeName={selectedScheme?.scheme_name || ''}
-      />
+        {schemes.length > 0 && (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {schemes.map((scheme) => (
+              <SchemeCard
+                key={scheme.id}
+                scheme={scheme}
+                onViewDocuments={() => {
+                  setSelectedScheme(scheme);
+                  setIsModalOpen(true);
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {!loading && schemes.length === 0 && (
+          <div className="text-center max-w-md mx-auto mt-12">
+            <div className="bg-white rounded-2xl p-6 border border-slate-100">
+              <Search className="h-12 w-12 text-amber-600 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-slate-900 mb-2">
+                No schemes found yet
+              </h3>
+              <p className="text-slate-600">
+                Click the button above to find government schemes that match your profile.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <SchemeDocumentsModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedScheme(null);
+          }}
+          documents={selectedScheme?.documents_required || ''}
+          schemeName={selectedScheme?.scheme_name || ''}
+        />
+      </div>
 
       <ChatbotInterface />
     </div>
