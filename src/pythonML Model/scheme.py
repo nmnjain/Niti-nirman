@@ -1,10 +1,11 @@
-import pandas as pd
-from typing import Dict, List, Any
-from supabase import create_client, Client
+from transformers import AutoTokenizer, AutoModel
+import torch
+import torch.nn.functional as F
 from dataclasses import dataclass
+from typing import List, Dict, Any
+import numpy as np
 from flask import Flask, request, jsonify
 from supabase import create_client, Client
-from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 
@@ -20,203 +21,149 @@ class UserProfile:
     bpl: str
     income: float
 
-class SchemeRecommender:
+class BERTSchemeRecommender:
     def __init__(self, supabase_url: str, supabase_key: str):
-        """Initialize the recommender system with Supabase."""
+        """Initialize BERT-based recommender system."""
+        # Initialize Supabase client
         self.supabase: Client = create_client(supabase_url, supabase_key)
+        
+        # Load BERT model and tokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+        self.model = AutoModel.from_pretrained('bert-base-uncased')
+        self.model.eval()  # Set to evaluation mode
+        
+    def _create_profile_description(self, user: UserProfile) -> str:
+        """Convert user profile to natural language description."""
+        description = f"""
+        A {user.age} year old {user.gender} from {user.location}. 
+        They belong to {user.caste} caste category. 
+        {"They have a disability." if user.disability == "Yes" else "They don't have any disability."}
+        {"They belong to a minority community." if user.minority == "Yes" else "They don't belong to a minority community."}
+        {"They are a student." if user.student == "Yes" else "They are not a student."}
+        {"They are below poverty line." if user.bpl == "Yes" else "They are not below poverty line."}
+        Their annual income is {user.income} rupees.
+        """
+        return description.strip()
 
-    def fetch_user_info(self, email: str) -> UserProfile:
-        """Fetch user information from Supabase based on email."""
-        response = self.supabase.table("user_profiles").select("*").eq("email", email).execute()
-        if response.data and len(response.data) > 0:
-            user_data = response.data[0]
-            return UserProfile(
-                gender=user_data["gender"],
-                age=user_data["age"],
-                location=user_data["location"],
-                caste=user_data["caste"],
-                disability=user_data["disability"],
-                minority=user_data["minority"],
-                student=user_data["student"],
-                bpl=user_data["bpl"],
-                income=user_data["income"],
-            )
-        else:
-            raise ValueError("User not found in the database.")
+    def _create_scheme_description(self, scheme: Dict[str, Any]) -> str:
+        """Convert scheme eligibility criteria to natural language description."""
+        description = f"""
+        This scheme is for {scheme['gender']} candidates.
+        Age requirement: {scheme['age_range']}.
+        Income requirement: {scheme['income_range']}.
+        Eligible castes: {scheme['eligible_castes']}.
+        Location requirement: {scheme['location']}.
+        {"Requires disability status." if scheme['disability'] == "Yes" else ""}
+        {"Requires minority status." if scheme['minority'] == "Yes" else ""}
+        {"For students only." if scheme['student'] == "Yes" else ""}
+        {"For BPL candidates." if scheme['bpl'] == "Yes" else ""}
+        """
+        return description.strip()
 
-    def fetch_schemes(self) -> List[Dict[str, Any]]:
-        """Fetch all schemes from Supabase."""
-        response = self.supabase.table("schemes").select("*").execute()
-        return response.data or []
-
-    def _parse_range(self, range_str: str, value: float) -> bool:
-        """Check if a numeric value falls within a specified range."""
-        if not range_str or range_str in ["Any", "Anyone"]:
-            return True
-
-        try:
-            # Handle age ranges like "Age>=18" or "18<=Age<=65"
-            range_str = range_str.replace(" ", "").lower()
+    def _get_bert_embedding(self, text: str) -> torch.Tensor:
+        """Generate BERT embedding for given text."""
+        # Tokenize and prepare input
+        inputs = self.tokenizer(text, padding=True, truncation=True, max_length=512, 
+                              return_tensors="pt")
+        
+        # Generate embeddings
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            # Use CLS token embedding (first token)
+            embeddings = outputs.last_hidden_state[:, 0, :]
             
-            # Handle age ranges
-            if "age" in range_str.lower():
-                range_str = range_str.lower().replace("age", "")
+        # Normalize embeddings
+        return F.normalize(embeddings, p=2, dim=1)
+
+    def _calculate_similarity(self, embed1: torch.Tensor, embed2: torch.Tensor) -> float:
+        """Calculate cosine similarity between embeddings."""
+        return torch.cosine_similarity(embed1, embed2, dim=1).item()
+
+    def _check_numerical_criteria(self, scheme: Dict[str, Any], user: UserProfile) -> bool:
+        """Check strict numerical criteria (age and income)."""
+        def parse_range(range_str: str, value: float) -> bool:
+            if not range_str or range_str in ["Any", "Anyone"]:
+                return True
             
-            # Handle income ranges
-            if "income" in range_str.lower():
-                range_str = range_str.lower().replace("income", "")
-            
-            # Handle < and > symbols
-            if "<" in range_str and "=" not in range_str:
-                max_val = float(range_str.replace("<", ""))
-                return value < max_val
-                
-            if "<=" in range_str:
-                if ">=" in range_str:
-                    # Handle range like "18<=Age<=65"
-                    parts = range_str.split("<=")
-                    min_val = float(parts[0])
-                    max_val = float(parts[2])
-                    return min_val <= value <= max_val
-                else:
-                    # Handle range like "<=20000"
+            try:
+                range_str = range_str.replace(" ", "").lower()
+                if "<=" in range_str:
                     max_val = float(range_str.replace("<=", ""))
                     return value <= max_val
-            elif ">=" in range_str:
-                # Handle range like ">=18"
-                min_val = float(range_str.replace(">=", ""))
-                return value >= min_val
-            elif "-" in range_str:
-                # Handle range like "18-65"
-                min_val, max_val = map(float, range_str.split("-"))
-                return min_val <= value <= max_val
-            elif range_str.isdigit():
-                # Handle exact value
-                return value == float(range_str)
-            else:
-                return False
-        except (ValueError, IndexError) as e:
-            print(f"Error parsing range: {range_str}, Value: {value}, Error: {e}")
-            return False
+                elif ">=" in range_str:
+                    min_val = float(range_str.replace(">=", ""))
+                    return value >= min_val
+                elif "-" in range_str:
+                    min_val, max_val = map(float, range_str.split("-"))
+                    return min_val <= value <= max_val
+                return True
+            except:
+                return True
 
-    def _check_caste_eligibility(self, scheme_castes: str, user_castes: str) -> bool:
-        """Check if user's caste matches scheme's caste requirements."""
-        # Handle empty or None cases
-        if not scheme_castes:
-            return True
-            
-        # Handle "Anyone" cases in various formats
-        if scheme_castes in [["Anyone"], "['Anyone']", "['anyone']", "[\"Anyone\"]"]:
-            return True
-            
-        try:
-            # Convert string representation of list to actual list if needed
-            if isinstance(scheme_castes, str):
-                if scheme_castes.startswith('[') and scheme_castes.endswith(']'):
-                    scheme_castes = eval(scheme_castes)
-                else:
-                    scheme_castes = [scheme_castes]
-                    
-            # Convert to list if not already
-            if not isinstance(scheme_castes, list):
-                scheme_castes = [scheme_castes]
-                
-            # Convert everything to lowercase for comparison
-            scheme_castes_lower = [str(c).lower().strip() for c in scheme_castes]
-            user_castes_lower = [str(c).lower().strip() for c in user_castes]
-            
-            # Check if any user caste matches any scheme caste
-            return any(user_caste in scheme_castes_lower for user_caste in user_castes_lower)
-        except Exception as e:
-            print(f"Error in caste eligibility check: {e}")
-            return False
+        return (parse_range(scheme["age_range"], user.age) and 
+                parse_range(scheme["income_range"], user.income))
 
-    def _check_eligibility(self, scheme: Dict[str, Any], user: UserProfile) -> bool:
-        """Check if a user is eligible for a scheme based on all criteria."""
-        # Handle gender eligibility
-        gender_match = (
-            scheme["gender"] in ["Anyone", "['Anyone']"] 
-            or user.gender == scheme["gender"]
-        )
-
-        # Handle location eligibility
-        location_match = (
-            scheme["location"] in ["Anyone", "['Anyone']"] 
-            or user.location == scheme["location"]
-        )
-
-        # Handle disability eligibility
-        disability_match = (
-            scheme["disability"] in ["Anyone", "['Anyone']", "No"] 
-            or user.disability == scheme["disability"]
-        )
-
-        # Handle minority eligibility
-        minority_match = (
-            scheme["minority"] in ["Anyone", "['Anyone']"] 
-            or user.minority == scheme["minority"]
-        )
-
-        # Handle student eligibility
-        student_match = (
-            scheme["student"] in ["Anyone", "['Anyone']"] 
-            or user.student == scheme["student"]
-        )
-
-        # Handle BPL eligibility
-        bpl_match = (
-            scheme["bpl"] in ["Anyone", "['Anyone']"] 
-            or user.bpl == scheme["bpl"]
-        )
-
-        # Combine all eligibility criteria
-        is_eligible = (
-            gender_match
-            and location_match
-            and self._check_caste_eligibility(scheme["eligible_castes"], user.caste)
-            and disability_match
-            and minority_match
-            and student_match
-            and bpl_match
-            and self._parse_range(scheme["age_range"], user.age)
-            and self._parse_range(scheme["income_range"], user.income)
-        )
-
+    def get_recommendations(self, email: str, similarity_threshold: float = 0.7) -> List[int]:
+        """Get scheme recommendations for a user using BERT-based similarity."""
+        # Fetch user profile
+        response = self.supabase.table("user_profiles").select("*").eq("email", email).execute()
+        if not response.data:
+            raise ValueError("User not found in the database.")
         
+        user_data = response.data[0]
+        user = UserProfile(
+            gender=user_data["gender"],
+            age=user_data["age"],
+            location=user_data["location"],
+            caste=user_data["caste"],
+            disability=user_data["disability"],
+            minority=user_data["minority"],
+            student=user_data["student"],
+            bpl=user_data["bpl"],
+            income=user_data["income"]
+        )
 
-        return is_eligible
+        # Get user profile embedding
+        user_description = self._create_profile_description(user)
+        user_embedding = self._get_bert_embedding(user_description)
 
-    def get_recommendations(self, email: str) -> List[int]:
-        """Get all eligible scheme IDs for a user."""
-        user = self.fetch_user_info(email)
-        schemes = self.fetch_schemes()
-        
+        # Fetch all schemes
+        schemes = self.supabase.table("schemes").select("*").execute()
         eligible_scheme_ids = []
-        for scheme in schemes:
-            if self._check_eligibility(scheme, user):
-                eligible_scheme_ids.append(scheme["id"])  
-        
+
+        # Compare with each scheme
+        for scheme in schemes.data:
+            # First check strict numerical criteria
+            if not self._check_numerical_criteria(scheme, user):
+                continue
+
+            # Generate scheme description and embedding
+            scheme_description = self._create_scheme_description(scheme)
+            scheme_embedding = self._get_bert_embedding(scheme_description)
+
+            # Calculate similarity
+            similarity = self._calculate_similarity(user_embedding, scheme_embedding)
+
+            # If similarity is above threshold, consider scheme eligible
+            if similarity >= similarity_threshold:
+                eligible_scheme_ids.append(scheme["id"])
+
         return eligible_scheme_ids
 
-
-
+# Flask application setup
 app = Flask(__name__)
-
-CORS(app) 
 load_dotenv()
-
 
 SUPABASE_URL = os.getenv("VITE_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("VITE_SUPABASE_ANON_KEY")
 
-
-recommender = SchemeRecommender(SUPABASE_URL, SUPABASE_KEY)
+recommender = BERTSchemeRecommender(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route("/get_recommendations", methods=["POST"])
 def get_recommendations():
     data = request.json
     email = data.get("email")
-        
+    
     if not email:
         return jsonify({"error": "Email is required"}), 400
 
@@ -224,10 +171,9 @@ def get_recommendations():
         scheme_ids = recommender.get_recommendations(email)
         return jsonify({"eligible_scheme_ids": scheme_ids}), 200
     except ValueError as ve:
-        return jsonify({"error": str(ve)}), 404  # User not found
+        return jsonify({"error": str(ve)}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  # General server error
-
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
