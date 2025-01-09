@@ -5,6 +5,7 @@ import { Landing } from './pages/Landing';
 import { SignUp } from './pages/SignUp';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import ProfilePage from './pages/profile';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </Layout>
     </BrowserRouter>

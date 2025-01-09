@@ -4,6 +4,7 @@ export type YesNoType = 'Yes' | 'No';
 
 export interface UserProfile {
   id?: string;
+  name:string;
   email: string;
   gender: GenderType;
   age: number;
@@ -16,6 +17,10 @@ export interface UserProfile {
   income: number;
   created_at?: string;
   updated_at?: string;
+  pincode: string;
+  state: string;
+  city:string;
+  aadhar_verified:boolean;
 }
 
 export interface Scheme {
