@@ -88,9 +88,11 @@ export function SignUp() {
     if (name === 'dob') {
       const birthDate = new Date(value);
       const today = new Date();
-      const age = today.getFullYear() - birthDate.getFullYear();
+      const age = today.getFullYear() - birthDate.getFullYear() - 
+          ((today.getMonth() < birthDate.getMonth() || 
+          (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) ? 1 : 0);
       setFormData(prev => ({ ...prev, age: age.toString() }));
-    }
+  }
   };
 
 

@@ -190,32 +190,25 @@ class AadhaarVerifier:
     def _safe_print(self, message: str):
         """Safely print messages with Unicode characters."""
         try:
-            # Try to encode as UTF-8
             if isinstance(message, str):
                 message = message.encode('utf-8', errors='replace').decode('utf-8')
             print(message)
         except Exception:
-            # If all else fails, strip to ASCII
             print(str(message).encode('ascii', 'replace').decode('ascii'))
 
     def _preprocess_image(self, image: Image.Image) -> tuple[Image.Image, Image.Image]:
         """Enhanced preprocessing for better OCR results."""
-        # Convert PIL Image to OpenCV format
         opencv_img = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
         
-        # Convert to grayscale
         gray = cv2.cvtColor(opencv_img, cv2.COLOR_BGR2GRAY)
         
-        # Apply adaptive thresholding
         threshold = cv2.adaptiveThreshold(
             gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
             cv2.THRESH_BINARY, 21, 11
         )
         
-        # Denoise
         denoised = cv2.fastNlMeansDenoising(gray)
         
-        # Enhance contrast
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
         enhanced = clahe.apply(denoised)
         
@@ -224,73 +217,57 @@ class AadhaarVerifier:
     def _extract_name(self, text: str) -> str:
         """Extract name from Aadhaar card text with improved accuracy."""
         try:
-            # Ensure text is properly encoded
             text = text.encode('utf-8', errors='replace').decode('utf-8')
             self._safe_print("\nProcessing text for name extraction")
             
-            # Split text into lines and clean each line
             lines = [line.strip() for line in text.split('\n') if line.strip()]
             
-            # Print each line for debugging
             self._safe_print("\nProcessed lines:")
             for i, line in enumerate(lines):
                 self._safe_print(f"Line {i}: {line}")
 
-            # Common prefixes to remove
             prefixes_to_remove = ['sy', 'sj', 'sh', 'shri', 'smt', 'mr', 'mrs', 'ms']
             
             for i, line in enumerate(lines):
-                # Skip lines that are clearly headers or footers
                 if any(header in line.lower() for header in ['government of india', 'unique identification', 'aadhaar', 'भारत सरकार']):
                     continue
-                
-                # Skip lines that are clearly not names
                 if any(keyword in line.lower() for keyword in ['male', 'female', 'dob', 'birth', 'address', 'pincode', 'आधार', 'पहचान']):
                     continue
 
-                # Clean the line
                 cleaned_line = line.strip()
                 
-                # Remove common prefixes
                 lower_line = cleaned_line.lower()
                 for prefix in prefixes_to_remove:
                     if lower_line.startswith(prefix + ' '):
                         cleaned_line = cleaned_line[len(prefix) + 1:]
                         break
                 
-                # Look for name patterns
                 name_match = re.match(r'^[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2}$', cleaned_line.strip())
                 if name_match:
                     name = cleaned_line.strip()
                     self._safe_print(f"Found name using exact pattern: {name}")
                     return name
 
-                # Look for name near DOB line
                 if 'DOB' in line or 'दिनांक' in line or 'जन्म' in line:
-                    # Check previous line for name
+                
                     if i > 0:
                         prev_line = lines[i-1].strip()
-                        # Clean previous line
                         for prefix in prefixes_to_remove:
                             if prev_line.lower().startswith(prefix + ' '):
                                 prev_line = prev_line[len(prefix) + 1:]
                                 break
                         
-                        # Verify it looks like a name (capitalized words only)
                         if re.match(r'^[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2}$', prev_line):
                             self._safe_print(f"Found name before DOB: {prev_line}")
                             return prev_line
 
-            # If no name found yet, try alternative patterns
             for line in lines:
                 cleaned_line = line.strip()
-                # Remove common prefixes
                 for prefix in prefixes_to_remove:
                     if cleaned_line.lower().startswith(prefix + ' '):
                         cleaned_line = cleaned_line[len(prefix) + 1:]
                         break
                         
-                # Look for common Indian name patterns
                 name_pattern = r'(?:^|\s)([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})(?=\s|$)'
                 match = re.search(name_pattern, cleaned_line)
                 if match:
@@ -324,10 +301,8 @@ class AadhaarVerifier:
                 match = re.search(pattern, text)
                 if match:
                     date_str = match.group(1)
-                    # Standardize to DD/MM/YYYY format
                     date_str = re.sub(r'[.\-]', '/', date_str)
                     try:
-                        # Verify it's a valid date
                         datetime.strptime(date_str, '%d/%m/%Y')
                         self._safe_print(f"Found DOB: {date_str}")
                         return date_str

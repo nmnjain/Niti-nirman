@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Hide Google Translate elements */
 .goog-te-banner-frame.skiptranslate {
   display: none !important;
 }
@@ -30,8 +29,6 @@ body {
   right: 0;
   opacity: 0;
 }
-
-/* Add these rules to your existing CSS */
 .goog-te-gadget-simple {
   background-color: transparent !important;
   border: none !important;
@@ -48,7 +45,6 @@ body {
   box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
 }
 
-/* Add these to your existing CSS */
 .goog-te-banner-frame.skiptranslate,
 .goog-te-gadget-icon {
   display: none !important;
@@ -71,19 +67,15 @@ body {
   overflow: hidden !important;
 }
 
-/* Add these to your existing CSS */
 .goog-text-highlight {
   background: none !important;
   box-shadow: none !important;
 }
 
-/* Hide the automatic top bar */
 .VIpgJd-ZVi9od-l4eHX-hSRGPd,
 .VIpgJd-ZVi9od-ORHb-OEVmcd {
   display: none !important;
 }
-
-/* Ensure translated text is visible */
 .translated-text {
   visibility: visible !important;
 }

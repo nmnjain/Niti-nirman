@@ -8,7 +8,7 @@ import ChatbotInterface from '../components/ChatbotInterface';
 import { SchemeAPI } from '../services/api';
 import { SchemeCard, SchemeModal } from '../components/SchemeComponents';
 
-// Types
+
 interface Scheme {
   id: string;
   scheme_name: string;
@@ -30,8 +30,6 @@ interface UserProfile {
   bpl: string;
   income: number;
 }
-
-// Supabase client setup
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -63,10 +61,6 @@ const VerificationPrompt = ({ onVerifyClick }: { onVerifyClick: () => void }) =>
 
 
 
-
-
-
-// Main Dashboard Component
 export function Dashboard() {
   const navigate = useNavigate();
   const { language } = useLanguage();

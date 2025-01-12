@@ -55,7 +55,7 @@ const ProfilePage = () => {
             if (profileError) throw profileError;
             setProfile({
                 ...data,
-                aadhaarVerified: data.aadhar_verified // Add this line to map the database column
+                aadhaarVerified: data.aadhar_verified 
             });
             if (data.profile_photo) {
                 const { data: photoData } = await supabase.storage
@@ -75,14 +75,11 @@ const ProfilePage = () => {
         if (!file) return;
 
         try {
-            // Create a preview
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPhotoPreview(reader.result);
             };
             reader.readAsDataURL(file);
-
-            // Upload to Supabase Storage
             const fileExt = file.name.split('.').pop();
             const fileName = `${profile.email}-${Math.random()}.${fileExt}`;
 
@@ -92,7 +89,6 @@ const ProfilePage = () => {
 
             if (uploadError) throw uploadError;
 
-            // Update profile with new photo URL
             const { error: updateError } = await supabase
                 .from('user_profiles')
                 .update({ profile_photo: fileName })
@@ -207,8 +203,7 @@ const ProfilePage = () => {
                     </div>
                 </div>
 
-                {/* Aadhaar Verification Section */}
-                {/* Aadhaar Verification Section */}
+                
                 {!profile.aadhaarVerified && (
                     <div className="mb-8">
                         <AadhaarVerification
@@ -222,7 +217,6 @@ const ProfilePage = () => {
                     </div>
                 )}
 
-                {/* Profile Form */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div className="px-8 py-6">
                         <h2 className="text-xl font-serif font-semibold text-slate-900 mb-6">Update Profile</h2>
@@ -240,7 +234,6 @@ const ProfilePage = () => {
                         )}
 
                         <form onSubmit={handleUpdate} className="space-y-6">
-                            {/* Age Input */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">Age</label>
                                 <input
@@ -251,7 +244,6 @@ const ProfilePage = () => {
                                 />
                             </div>
 
-                            {/* Location Details */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -277,8 +269,6 @@ const ProfilePage = () => {
                                     />
                                 </div>
                             </div>
-
-                            {/* Income */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">
                                     <div className="flex items-center">
@@ -294,7 +284,6 @@ const ProfilePage = () => {
                                 />
                             </div>
 
-                            {/* Additional Info Display */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-100">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-500 mb-1">Gender</label>
@@ -314,7 +303,6 @@ const ProfilePage = () => {
                                 </div>
                             </div>
 
-                            {/* Submit Button */}
                             <div className="flex justify-end pt-6">
                                 <button
                                     type="submit"

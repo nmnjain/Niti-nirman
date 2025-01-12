@@ -139,8 +139,7 @@ export function Landing() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      {/* FAQ Section */}
+      
       <section className="py-16 bg-gradient-to-b from-white to-amber-50/30">
         <div className="container px-4 mx-auto">
           <h2 className="text-3xl md:text-4xl font-serif text-center text-slate-900 mb-16">
@@ -213,7 +212,6 @@ export function Landing() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-16">
         <div className="container px-4 mx-auto">
           <div className="max-w-4xl mx-auto text-center">
@@ -234,7 +232,7 @@ export function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
+
       <footer className="py-20 bg-white">
         <div className="container px-4 mx-auto">
           <div className="max-w-6xl mx-auto">

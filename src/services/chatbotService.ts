@@ -24,8 +24,6 @@ interface Scheme {
   income_range: string;
   documents_required: string;
 }
-
-// Fetch schemes from Supabase with caching
 const fetchSchemes = async (): Promise<Scheme[]> => {
   if (cachedSchemes) return cachedSchemes;
 
@@ -42,7 +40,6 @@ const fetchSchemes = async (): Promise<Scheme[]> => {
   return schemes;
 };
 
-// Format schemes for the chatbot context
 const formatSchemesContext = (schemes: Scheme[]): string => {
   return schemes.map(scheme => `
 Scheme: ${scheme.scheme_name}
@@ -92,7 +89,6 @@ ${schemesContext}`;
   return chatSession;
 };
 
-// Function to invalidate cache when needed (e.g., when schemes are updated)
 export const invalidateSchemeCache = () => {
   cachedSchemes = null;
 };
@@ -111,7 +107,6 @@ export const sendMessage = async (message: string): Promise<string> => {
   }
 };
 
-// Utility function to refresh chat session with latest scheme data
 export const refreshChatSession = async () => {
   invalidateSchemeCache();
   chatSession = await initializeChatSession();

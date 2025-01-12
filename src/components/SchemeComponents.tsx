@@ -1,4 +1,4 @@
-// SchemeComponents.tsx
+
 import React from 'react';
 import { FileText, Shield, Gift, ArrowRight, X, Info } from 'lucide-react';
 

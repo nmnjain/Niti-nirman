@@ -23,7 +23,7 @@ const ChatbotInterface = () => {
     if (!inputMessage.trim()) return;
 
     const userMessage = inputMessage.trim();
-    setInputMessage(''); // Clear input immediately
+    setInputMessage(''); 
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
@@ -59,7 +59,7 @@ const ChatbotInterface = () => {
             flex flex-col
           `}
         >
-          {/* Chat Header */}
+          
           <div className="flex items-center justify-between p-4 border-b bg-amber-600 text-white rounded-t-lg">
             <h3 className="font-semibold">Niti-Mitra</h3>
             <div className="flex gap-2">
@@ -87,7 +87,7 @@ const ChatbotInterface = () => {
 
           {!isMinimized && (
             <>
-              {/* Chat Messages */}
+              
               <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${isEnlarged ? 'text-base' : 'text-sm'}`}>
                 {messages.map((message, index) => (
                   <div
@@ -119,7 +119,7 @@ const ChatbotInterface = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Chat Input */}
+            
               <div className="border-t p-4">
                 <div className="flex gap-2">
                   <input
