@@ -6,6 +6,8 @@ NitiNirman: AI-Powered Platform for Simplified Access to Government Schemes
 
 
 NitiNirman is an AI-driven platform designed to empower citizens, especially those in rural areas, by streamlining access to government schemes and services. The platform leverages advanced technologies like AI, blockchain, and API integrations to improve accessibility, efficiency, and user experience. Key features include tailored scheme recommendations based on user profiles, document verification via government APIs, blockchain-secured document storage, and a chatbot for essential scheme information. With a user-centric design, NitiNirman aims to bridge the gap between citizens and government resources, ensuring inclusivity and transparency.
+
+Team: Ayush kakkar, Shreya Kumari 
 ## Deployment
 
 To run this project locally
